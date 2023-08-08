@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
 import TimelineSeparator from '@mui/lab/TimelineSeparator';
@@ -7,76 +7,74 @@ import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineOppositeContent from '@mui/lab/TimelineOppositeContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import FastfoodIcon from '@mui/icons-material/Fastfood';
+import Typography from '@mui/material/Typography';
 import LaptopMacIcon from '@mui/icons-material/LaptopMac';
 import HotelIcon from '@mui/icons-material/Hotel';
 import RepeatIcon from '@mui/icons-material/Repeat';
-import Typography from '@mui/material/Typography';
-import axios from 'axios';
-import { useState, useEffect } from 'react';
 
+export default function CustomizedTimeline({ changeList }) {
+    const [changes, setChanges] = useState([]);
 
-export default function CustomizedTimeline() {
-    const baseUrl = "http://localhost:4000/api"
-    const [changes, setChanges] = useState([])
+    const iconsList = [<TimelineDot>
+        <FastfoodIcon />
+    </TimelineDot>
+        , <TimelineDot color="primary">
+        <LaptopMacIcon />
+    </TimelineDot>
+        , <TimelineDot color="primary" variant="outlined">
+        <HotelIcon />
+    </TimelineDot>
+        , <TimelineDot color="secondary">
+        <RepeatIcon />
+    </TimelineDot>
+    ]
 
-    const getChanges = () => {
-        // Call API to save content
-        axios.get(baseUrl + '/changes')
-            .then(response => {
+    const processChanges = async () => {
 
-                console.log(response)
-                const changeList = response.changes
-                const timeLineList = []
+        console.log("hnage log so far")
+        console.log(changeList)
 
-                const resp = []
-                changeList.map(changeObj => {
-                    const obj = <TimelineItem>
-                        <TimelineOppositeContent
-                            sx={{ m: 'auto 0' }}
-                            align="right"
-                            variant="body2"
-                            color="text.secondary"
-                        >
-                            changeObj.timestamp
-                        </TimelineOppositeContent>
-                        <TimelineSeparator>
-                            <TimelineConnector />
-                            <TimelineDot>
-                                <FastfoodIcon />
-                            </TimelineDot>
-                            <TimelineConnector />
-                        </TimelineSeparator>
-                        <TimelineContent sx={{ py: '12px', px: 2 }}>
-                            <Typography variant="h6" component="span">
-                                changeObj.username
-                            </Typography>
-                            <Typography>Because you need strength</Typography>
-                            <Typography>Because you need strength</Typography>
-                            <Typography>Because you need strength</Typography>
-
-                            <Typography>Because you need strength</Typography>
-
-                        </TimelineContent>
-                    </TimelineItem>
-
-                    timeLineList.push(obj)
-                })
-
-                setChanges(timeLineList)
-                console.log(changes)
-
+        const timeLineList = changeList.map(changeObj => {
+            const temp = []
+            changeObj.changes.map(d => {
+                temp.push(<Typography>{d}</Typography>)
             })
-            .catch(error => {
-                console.log("error occurred while fetching errors")
-            });
-    };
+            return <TimelineItem key={changeObj.id}>
+                <TimelineOppositeContent
+                    sx={{ m: 'auto 0' }}
+                    align="right"
+                    variant="body2"
+                    color="text.secondary"
+                >
+                    {changeObj.timestamp}
+                </TimelineOppositeContent>
+                <TimelineSeparator>
+                    <TimelineConnector />
+
+                    {iconsList[(changeObj.id) % (iconsList.length)]}
+                    <TimelineConnector />
+                </TimelineSeparator>
+                <TimelineContent sx={{ py: '12px', px: 2 }}>
+                    <Typography variant="h6" component="span">
+                        {changeObj.username}
+                    </Typography>
+                    {temp}
+
+                </TimelineContent>
+            </TimelineItem>
+        });
+
+        setChanges(timeLineList);
+
+    }
 
     useEffect(() => {
-        getChanges(); // Call the API when the page opens up
-    }, []);
+        processChanges();
+    }, [changeList]);
+
     return (
         <Timeline position="alternate">
-            {{ changes }}
+            {changes}
         </Timeline>
     );
 }

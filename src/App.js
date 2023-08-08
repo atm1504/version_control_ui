@@ -11,6 +11,7 @@ function App() {
   const [postId, setPostId] = useState(1);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
+  const [changeList, setChangeList] = useState([])
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -39,9 +40,20 @@ function App() {
       });
   };
 
+  const getChanges = async () => {
+    try {
+      const resp = await axios.get(baseUrl + '/changes')
+      if (!resp) { return }
+      setChangeList(resp.data.changes)
+    } catch (err) {
+      console.log(err)
+    }
+  };
+
   useEffect(() => {
     getPostAPI(); // Call the API when the page opens up
   }, []);
+
 
   const getPostAPI = () => {
     // Call API to get initial post data
@@ -52,19 +64,14 @@ function App() {
         setName(username);
         setContent(content);
         setPostId(id);
+        getChanges();
+
       })
       .catch(error => {
         console.error('Error fetching post data:', error);
       });
   };
 
-  // const getPost = async () => {
-  //   const post = await axios.get(baseUrl + "/post")
-  //   if (post) {
-  //     setName(post.username)
-  //     setContent(post.content)
-  //   }
-  // }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -83,7 +90,7 @@ function App() {
           {alertMessage}
         </div>
       )}
-      <CustomizedTimeline />
+      <CustomizedTimeline changeList={changeList} />
     </div>
   );
 }
