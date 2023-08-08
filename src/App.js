@@ -1,11 +1,14 @@
 // App.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import CustomizedTimeline from './CustomizedTimeline';
 
 function App() {
+  const baseUrl = "http://localhost:4000/api"
   const [name, setName] = useState('');
   const [content, setContent] = useState('');
+  const [postId, setPostId] = useState(1);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertType, setAlertType] = useState('');
 
@@ -19,16 +22,49 @@ function App() {
 
   const handleSave = () => {
     // Call API to save content
-    axios.post('/api/save', { name, content })
+    const body = {
+      username: name,
+      content: content,
+      id: postId
+    }
+    axios.post(baseUrl + '/post', body)
       .then(response => {
         setAlertMessage('Changes saved successfully!');
         setAlertType('success');
+        getPostAPI();
       })
       .catch(error => {
         setAlertMessage('An error occurred while saving changes.');
         setAlertType('error');
       });
   };
+
+  useEffect(() => {
+    getPostAPI(); // Call the API when the page opens up
+  }, []);
+
+  const getPostAPI = () => {
+    // Call API to get initial post data
+    axios.get(baseUrl + '/post')
+      .then(response => {
+        console.log(response)
+        const { username, content, id } = response.data;
+        setName(username);
+        setContent(content);
+        setPostId(id);
+      })
+      .catch(error => {
+        console.error('Error fetching post data:', error);
+      });
+  };
+
+  // const getPost = async () => {
+  //   const post = await axios.get(baseUrl + "/post")
+  //   if (post) {
+  //     setName(post.username)
+  //     setContent(post.content)
+  //   }
+  // }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -47,6 +83,7 @@ function App() {
           {alertMessage}
         </div>
       )}
+      <CustomizedTimeline />
     </div>
   );
 }
